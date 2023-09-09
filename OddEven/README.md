@@ -4,7 +4,7 @@ This algorithm uses Introsort to sort the local arrays in each processor before 
 
 To compile:
 
-`mpic++ main.c -o <name_executable>`
+`mpic++ oddEven.c -o <name_executable>`
 
 To run:
 
