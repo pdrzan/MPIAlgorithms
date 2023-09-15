@@ -36,7 +36,7 @@ void InsertionSort(int arr[], int *begin, int *end)
 int *Partition(int arr[], int low, int high)
 {
     int pivot = arr[high];
-    int i = (low - 1);     
+    int i = (low - 1);
 
     for (int j = low; j <= high - 1; j++)
     {
@@ -116,7 +116,7 @@ void printArray(int arr[], int n)
 void merge(int firstArray[], int secondArray[], int aws[], int n)
 {
     int k = 0, j = 0, i = 0;
-    for (; k < 2 * n && j < n && i < n; k++)
+    for (; k < n; k++)
     {
         if (firstArray[i] <= secondArray[j])
         {
@@ -129,69 +129,74 @@ void merge(int firstArray[], int secondArray[], int aws[], int n)
             j++;
         }
     }
-    for (; i < n; i++)
+}
+
+void merge_inverse(int firstArray[], int secondArray[], int aws[], int n)
+{
+    int k = n - 1, j = n - 1, i = n - 1;
+    for (; k > -1; k--)
     {
-        aws[k] = firstArray[i];
-        k++;
-    }
-    for (; j < n; j++)
-    {
-        aws[k] = secondArray[j];
-        k++;
+        if (firstArray[i] >= secondArray[j])
+        {
+            aws[k] = firstArray[i];
+            i--;
+        }
+        else
+        {
+            aws[k] = secondArray[j];
+            j--;
+        }
     }
 }
 
 void compare_split(int arr[], int n, int rankDestiny, int op)
 {
-    int res[2 * n], recv[n];
-
+    int *res, *recv;
+    res = (int *)malloc(n * sizeof(int));
+    recv = (int *)malloc(n * sizeof(int));
     MPI_Sendrecv(arr, n, MPI_INT, rankDestiny, 1, recv, n, MPI_INT, rankDestiny, MPI_ANY_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    merge(arr, recv, res, n);
     if (op == 0) // min
     {
-        for (int i = 0; i < n; i++)
-        {
-            arr[i] = res[i];
-        }
+        merge(arr, recv, res, n);
     }
     else // max
     {
-        for (int i = 0; i < n; i++)
-        {
-            arr[i] = res[n + i];
-        }
+        merge_inverse(arr, recv, res, n);
     }
+    for (int i = 0; i < n; i++)
+    {
+        arr[i] = res[i];
+    }
+    free(res);
+    free(recv);
 }
 
 int main(int argc, char *argv[])
 {
-    int n = 4, arr[n], aux[n * n];
+    int n, *arr;
     int npes, myrank;
+    float stime, etime;
     MPI_Init(&argc, &argv);
     MPI_Comm_size(MPI_COMM_WORLD, &npes);
     MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
-
-    for (int i = 0; i < n * n; i++)
-    {
-        aux[i] = rand() % 50;
-    }
+    n = atoi(argv[1]);
+    srandom(myrank);
+    arr = (int *)malloc(n * sizeof(int));
     for (int i = 0; i < n; i++)
-    {
-        arr[i] = aux[n * myrank + i];
-    }
+        arr[i] = random() % (10 * n + 1);
     // sleep(myrank);
-    printf("Array of %d° processor before odd-even: ", myrank);
-    printArray(arr, n);
-    printf("\n");
+    // printf("Array of %d° processor before odd-even: ", myrank);
+    // printArray(arr, n);
+    // printf("\n");
     Introsort(arr, arr, arr + n - 1);
-
+    stime = MPI_Wtime();
     for (int i = 1; i <= npes; i++)
     {
         if (i % 2 == 1)
         {
             if (myrank % 2 == 1)
             {
-                if (myrank != n - 1)
+                if (myrank != npes - 1)
                     compare_split(arr, n, myrank + 1, 0); // min
             }
             else
@@ -204,7 +209,7 @@ int main(int argc, char *argv[])
         {
             if (myrank % 2 == 0)
             {
-                if (myrank != n - 1)
+                if (myrank != npes - 1)
                     compare_split(arr, n, myrank + 1, 0); // min
             }
             else
@@ -219,11 +224,14 @@ int main(int argc, char *argv[])
     //     printf("Sorted array: ");
     // }
     // sleep(myrank);
-    printArray(arr, n);
-    if (myrank == n - 1)
-    {
-        printf("\n");
-    }
+    // printArray(arr, 10);
+    etime = MPI_Wtime();
+    // if (myrank == n - 1)
+    // {
+    //     printf("\n");
+    // }
+    free(arr);
+    printf("time = %f\n", etime - stime);
     MPI_Finalize();
 
     return (0);
