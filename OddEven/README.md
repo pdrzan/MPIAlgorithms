@@ -8,7 +8,7 @@ To compile:
 
 To run:
 
-`mpirun -np <number_processors> <name_executable>`
+`mpirun -np <number_processors> <name_executable> <length_of_the_array_to_be_sorted>`
 
 Pseudocode:
 
@@ -33,4 +33,7 @@ Pseudocode:
 17. End ODD-EVEN PAR
 
 ```
-   
+
+Visualization:
+
+![Alt text](../Images/OddEven.png)

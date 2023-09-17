@@ -171,24 +171,30 @@ void compare_split(int arr[], int n, int rankDestiny, int op)
     free(recv);
 }
 
+void createRandomArray(int *arr, int n)
+{
+    for (int i = 0; i < n; i++)
+        arr[i] = random() % (10 * n + 1);
+}
+
 int main(int argc, char *argv[])
 {
     int n, *arr;
     int npes, myrank;
     float stime, etime;
+
     MPI_Init(&argc, &argv);
     MPI_Comm_size(MPI_COMM_WORLD, &npes);
     MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
+
     n = atoi(argv[1]) / npes;
     srandom(myrank);
+
     arr = (int *)malloc(n * sizeof(int));
-    for (int i = 0; i < n; i++)
-        arr[i] = random() % (10 * n + 1);
-    // sleep(myrank);
-    // printf("Array of %d° processor before odd-even: ", myrank);
-    // printArray(arr, n);
-    // printf("\n");
+    createRandomArray(arr, n);
+
     Introsort(arr, arr, arr + n - 1);
+
     stime = MPI_Wtime();
     for (int i = 1; i <= npes; i++)
     {
@@ -219,17 +225,8 @@ int main(int argc, char *argv[])
             }
         }
     }
-    // if (myrank == 0)
-    // {
-    //     printf("Sorted array: ");
-    // }
-    // sleep(myrank);
-    // printArray(arr, 10);
     etime = MPI_Wtime();
-    // if (myrank == n - 1)
-    // {
-    //     printf("\n");
-    // }
+
     free(arr);
     printf("time = %f\n", etime - stime);
     MPI_Finalize();

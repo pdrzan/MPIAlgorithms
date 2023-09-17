@@ -122,6 +122,12 @@ void printArray(int arr[], int n)
         cout << arr[i] << " ";
 }
 
+void createRandomArray(int *arr, int n)
+{
+    for (int i = 0; i < n; i++)
+        arr[i] = random() % (10 * n + 1);
+}
+
 int main(int argc, char *argv[])
 {
     int n, *arr, myrank, npes, base;
@@ -144,16 +150,7 @@ int main(int argc, char *argv[])
 
     srandom(myrank + 1);
     arr = (int *)malloc(n * sizeof(int));
-    for (int i = 0; i < n; i++)
-        arr[i] = random() % (2 * n);
-
-    // MPI_Barrier(MPI_COMM_WORLD);
-    // sleep(myrank);
-    // printArray(arr, n);
-    // if (myrank == npes - 1)
-    // {
-    //     printf("\n");
-    // }
+    createRandomArray(arr, n);
 
     if (n != 1)
     {
@@ -170,7 +167,6 @@ int main(int argc, char *argv[])
 
             if (myrank % (aux * 2) < aux)
             {
-                // printf("Rank %d manda para %d\n", myrank, myrank + aux);
                 if (myrank % aux2 < pow(2, i + 1))
                 {
                     compare_split(arr, n, myrank + aux, 0);
@@ -182,7 +178,6 @@ int main(int argc, char *argv[])
             }
             else
             {
-                // printf("Rank %d manda para %d\n", myrank, myrank - aux);
                 if (myrank % aux2 < pow(2, i + 1))
                 {
                     compare_split(arr, n, myrank - aux, 1);
@@ -192,17 +187,10 @@ int main(int argc, char *argv[])
                     compare_split(arr, n, myrank - aux, 0);
                 }
             }
-            MPI_Barrier(MPI_COMM_WORLD);
         }
     }
     etime = MPI_Wtime();
-
-    // MPI_Barrier(MPI_COMM_WORLD);
-    // sleep(myrank);
-    // printArray(arr, 10);
-    //     printf("\n");
-    // MPI_Barrier(MPI_COMM_WORLD);
-
+    free(arr);
     printf("time = %f\n", etime - stime);
     MPI_Finalize();
     return 0;
