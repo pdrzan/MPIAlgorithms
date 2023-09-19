@@ -69,7 +69,7 @@ int verifyBaseOfEntries(int n, int npes)
 {
     if (isBaseOf2(n) && isBaseOf2(npes))
     {
-        printf("The number of processors and the size of the array are base of 2.\n");
+        // printf("The number of processors and the size of the array are base of 2.\n");
         return 0;
     }
     else if (isBaseOf2(n) && !isBaseOf2(npes))
