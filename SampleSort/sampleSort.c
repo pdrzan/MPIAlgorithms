@@ -151,6 +151,8 @@ int *SampleSort(int n, int *elmnts, int *nsorted, MPI_Comm comm)
   for (i = 0; i < npes; i++)
     scounts[i] = 0;
 
+  //fazer a busca binária aqui
+  //TO DO
   for (j = i = 0; i < nlocal; i++)
   {
     if (elmnts[i] < splitters[j])
