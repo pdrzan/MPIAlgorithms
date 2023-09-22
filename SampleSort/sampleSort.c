@@ -5,6 +5,28 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+int binarySearch(int arr[], int l, int r, int x)
+{
+    while (l <= r) {
+        int m = l + (r - l) / 2;
+ 
+        // Check if x is present at mid
+        if (arr[m] == x)
+            return m;
+ 
+        // If x greater, ignore left half
+        if (arr[m] < x)
+            l = m + 1;
+ 
+        // If x is smaller, ignore right half
+        else
+            r = m - 1;
+    }
+ 
+    // If we reach here, then element was not present
+    return -1;
+}
+
 void swapValue(int *a, int *b)
 {
   int *temp = a;
@@ -139,7 +161,7 @@ int *SampleSort(int n, int *elmnts, int *nsorted, MPI_Comm comm)
 
   MPI_Allgather(splitters, npes - 1, MPI_INT, allpicks, npes - 1,
                 MPI_INT, comm);
-
+                
   // qsort(allpicks, npes * (npes - 1), sizeof(int), IncOrder);
   Introsort(allpicks, allpicks, allpicks + (npes * (npes - 1)) - 1);
 
@@ -153,12 +175,12 @@ int *SampleSort(int n, int *elmnts, int *nsorted, MPI_Comm comm)
 
   //fazer a busca binária aqui
   //TO DO
-  for (j = i = 0; i < nlocal; i++)
-  {
-    if (elmnts[i] < splitters[j])
-      scounts[j]++;
-    else
-      scounts[++j]++;
+  
+  int result;
+
+  for (j = 0; j < npes; j++){
+    result = binarySearch(elmnts, 0, nlocal, splitters[j]);
+    scounts[j] = result + 1;
   }
 
   sdispls = (int *)malloc(npes * sizeof(int));
@@ -199,8 +221,8 @@ void createRandomArray(int *arr, int n)
 
 int main(int argc, char *argv[])
 {
-  int n, npes, myrank, nlocal, *arr, *vsorted, nsorted, i;
-  MPI_Status status;
+  int n, npes, myrank, nlocal, *arr, *vsorted, nsorted;
+  // MPI_Status status;
   double stime, etime;
 
   MPI_Init(&argc, &argv);
