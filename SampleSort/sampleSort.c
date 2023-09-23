@@ -5,10 +5,18 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+void printArray(int arr[], int n){
+  printf("\n");
+  for (int i = 0; i < n; i++)
+    printf("%d ", arr[i]);
+  printf("\n");
+}
+
 int binarySearch(int arr[], int l, int r, int x)
 {
+    int m = 0;
     while (l <= r) {
-        int m = l + (r - l) / 2;
+        m = l + (r - l) / 2;
  
         // Check if x is present at mid
         if (arr[m] == x)
@@ -22,7 +30,7 @@ int binarySearch(int arr[], int l, int r, int x)
         else
             r = m - 1;
     }
- 
+
     // If we reach here, then element was not present
     return -1;
 }
@@ -153,8 +161,8 @@ int *SampleSort(int n, int *elmnts, int *nsorted, MPI_Comm comm)
   splitters = (int *)malloc(npes * sizeof(int));
   allpicks = (int *)malloc(npes * (npes - 1) * sizeof(int));
 
-  // qsort(elmnts, nlocal, sizeof(int), IncOrder);
-  Introsort(elmnts, elmnts, elmnts + nlocal - 1);
+  qsort(elmnts, nlocal, sizeof(int), IncOrder);
+  //Introsort(elmnts, elmnts, elmnts + nlocal - 1);
 
   for (i = 1; i < npes; i++)
     splitters[i - 1] = elmnts[i * nlocal / npes];
@@ -162,8 +170,8 @@ int *SampleSort(int n, int *elmnts, int *nsorted, MPI_Comm comm)
   MPI_Allgather(splitters, npes - 1, MPI_INT, allpicks, npes - 1,
                 MPI_INT, comm);
                 
-  // qsort(allpicks, npes * (npes - 1), sizeof(int), IncOrder);
-  Introsort(allpicks, allpicks, allpicks + (npes * (npes - 1)) - 1);
+  qsort(allpicks, npes * (npes - 1), sizeof(int), IncOrder);
+  //Introsort(allpicks, allpicks, allpicks + (npes * (npes - 1)) - 1);
 
   for (i = 1; i < npes; i++)
     splitters[i - 1] = allpicks[i * npes];
@@ -177,12 +185,22 @@ int *SampleSort(int n, int *elmnts, int *nsorted, MPI_Comm comm)
   //TO DO
   
   int result;
+  int left = 0;
 
   for (j = 0; j < npes; j++){
-    result = binarySearch(elmnts, 0, nlocal, splitters[j]);
-    scounts[j] = result + 1;
+    result = binarySearch(elmnts, 0, n, splitters[j]);
+
+    //se ele encontrou o elemento
+    if (result != -1){
+      //diminui o espaço de busca para o próximo bucket
+      left = result;
+      scounts[i] = result;
+    }
+
   }
 
+
+  /* Determine the starting location of each bucket's elements in the elmnts array */
   sdispls = (int *)malloc(npes * sizeof(int));
   sdispls[0] = 0;
 
@@ -201,8 +219,8 @@ int *SampleSort(int n, int *elmnts, int *nsorted, MPI_Comm comm)
 
   MPI_Alltoallv(elmnts, scounts, sdispls, MPI_INT, sorted_elmnts, rcounts, rdispls, MPI_INT, comm);
 
-  // qsort(sorted_elmnts, *nsorted, sizeof(int), IncOrder);
-  Introsort(sorted_elmnts, sorted_elmnts, sorted_elmnts + (*nsorted - 1));
+  qsort(sorted_elmnts, *nsorted, sizeof(int), IncOrder);
+  //Introsort(sorted_elmnts, sorted_elmnts, sorted_elmnts + (*nsorted - 1));
   free(splitters);
   free(allpicks);
   free(scounts);
@@ -245,6 +263,10 @@ int main(int argc, char *argv[])
   MPI_Barrier(MPI_COMM_WORLD);
 
   printf("time = %f\n", etime - stime);
+
+  // if(myrank == 0){
+  //   printArray(arr,nlocal); 
+  // }
 
   free(arr);
   free(vsorted);
