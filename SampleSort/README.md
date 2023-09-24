@@ -4,7 +4,7 @@ This algorithm uses qsort to sort the local arrays in each processor before Samp
 
 To compile:
 
-`mpic++ sampleSort.c -o <name_executable>`
+`mpic++ sampleSortQuick.c -o <name_executable>` or `mpic++ sampleSortIntro.c -o <name_executable>`
 
 To run:
 
